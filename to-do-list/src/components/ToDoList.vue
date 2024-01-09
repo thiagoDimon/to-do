@@ -62,6 +62,32 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <v-dialog
+    v-if="dialogDeletarTarefa"
+    activator="parent"
+    class="tamanho-dialog"
+  >
+    <v-card>
+      <v-card-title> CONFIRMAÇÃO! </v-card-title>
+      <v-card-text> Você deseja excluir a tarefa? </v-card-text>
+      <v-card-actions>
+        <v-row class="justify-center">
+          <v-btn
+            color="primary"
+            style="background-color: rgba(44, 111, 186, 0.25)"
+            @click="deletarTarefa"
+            >Confirmar</v-btn
+          >
+          <v-btn
+            color="red"
+            style="background-color: rgba(247, 132, 123, 0.25)"
+            @click="ref((dialogDeletarTarefa = false))"
+            >Cancelar</v-btn
+          >
+        </v-row>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <v-parallax
     src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
     style="height: 100%; width: 100%"
@@ -81,24 +107,46 @@
             </v-btn>
           </v-card-title>
           <v-card-text>
-            <v-expansion-panels class="ga-2" style="border-radius: none;">
-              <v-expansion-panel v-for="tarefas in toDos" :key="tarefas" style="background: rgba(0, 0, 0, 0.1)">
-                <div class="posicao-botao-editar" style="background-color: rgba(0, 0, 0, 0.1); border-radius: 0px 5px 0px 0px">
-                <v-btn
-                  icon="mdi-pencil"
-                  density="comfortable"
-                  style="background: rgba(0, 0, 0, 0.1); margin-right: 15px;"
-                  @click="
-                    ref((dialogEditarTarefa = true)),
-                      ref((tituloTarefaAtribuida = tarefas.tarefa.titulo)),
-                      ref((descricaoTarefaAtribuida = tarefas.tarefa.descricao))
+            <v-expansion-panels class="ga-2" style="border-radius: none">
+              <v-expansion-panel
+                v-for="(tarefas, index) in toDos"
+                :key="tarefas"
+                style="background: rgba(0, 0, 0, 0.1)"
+              >
+                <div
+                  class="posicao-botao-editar"
+                  style="
+                    background-color: rgba(0, 0, 0, 0.1);
+                    border-radius: 0px 5px 0px 0px;
                   "
-                ></v-btn>
+                >
+                  <v-btn
+                    icon="mdi-pencil"
+                    density="comfortable"
+                    style="margin-right: 15px"
+                    @click="
+                      ref((dialogEditarTarefa = true)),
+                        ref((tituloTarefaAtribuida = tarefas.tarefa.titulo)),
+                        ref(
+                          (descricaoTarefaAtribuida = tarefas.tarefa.descricao)
+                        ),
+                        ref((indexTarefa = index))
+                    "
+                  ></v-btn>
+                  <v-btn
+                    icon="mdi-delete"
+                    density="comfortable"
+                    style="margin-right: 15px"
+                    @click="
+                      ref((dialogDeletarTarefa = true)),
+                        ref((indexTarefa = index))
+                    "
+                  ></v-btn>
                 </div>
-                <v-expansion-panel-title style="background-color: white;">
+                <v-expansion-panel-title style="background-color: white">
                   {{ tarefas.tarefa.titulo }}
                 </v-expansion-panel-title>
-                <v-expansion-panel-text style="background-color: white;">
+                <v-expansion-panel-text style="background-color: white">
                   {{ tarefas.tarefa.descricao }}
                 </v-expansion-panel-text>
               </v-expansion-panel>
@@ -139,8 +187,6 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 
-// const mounted = onMounted();
-
 interface Tarefa {
   titulo: string;
   descricao: string;
@@ -156,9 +202,11 @@ const tituloTarefa = ref("");
 const descricaoTarefa = ref("");
 const tituloTarefaAtribuida = ref("");
 const descricaoTarefaAtribuida = ref("");
+const indexTarefa = ref(0);
 
 const dialogAdicionarTarefa = ref(false);
 const dialogEditarTarefa = ref(false);
+const dialogDeletarTarefa = ref(false);
 
 function adicionarTarefa() {
   const novaTarefa: ToDo = {
@@ -167,22 +215,35 @@ function adicionarTarefa() {
       descricao: descricaoTarefa.value,
     },
   };
-  ref(dialogAdicionarTarefa.value = false);
-  ref(tituloTarefa.value = "")
-  ref(descricaoTarefa.value = "")
-  return ref(toDos.value.push(novaTarefa));
+
+  ref((tituloTarefa.value = ""));
+  ref((descricaoTarefa.value = ""));
+  ref(toDos.value.push(novaTarefa));
+
+  return ref((dialogAdicionarTarefa.value = false));
 }
 
 function salvarEdicaoTarefa() {
-  // const tarefaEditada: ToDo = {
-  //   tarefa: {
-  //     titulo: tituloTarefaAtribuida.value,
-  //     descricao: descricaoTarefaAtribuida.value,
-  //   },
-  // };
-  // return ref(toDos.value = tarefaEditada)
-  alert("Funcionalidade em desenvolvivmento! Aguarde");
-  ref(dialogEditarTarefa.value = false);
+  const tarefaEditada: ToDo = {
+    tarefa: {
+      titulo: tituloTarefaAtribuida.value,
+      descricao: descricaoTarefaAtribuida.value,
+    },
+  };
+
+  ref((toDos.value[indexTarefa.value] = tarefaEditada));
+
+  return ref((dialogEditarTarefa.value = false));
+}
+
+function deletarTarefa() {
+  if (toDos.value.length > 1) {
+    ref(toDos.value.splice(indexTarefa.value, 1));
+    return ref((dialogDeletarTarefa.value = false));
+  } else {
+    ref((toDos.value = []));
+    return ref((dialogDeletarTarefa.value = false));
+  }
 }
 </script>
 
@@ -195,10 +256,10 @@ function salvarEdicaoTarefa() {
     width: 100%;
   }
   .posicao-botao-editar {
-    display: flex; 
-    justify-content: end; 
-    padding-top: 4px; 
-    padding-bottom: 5px; 
+    display: flex;
+    justify-content: start;
+    padding-top: 4px;
+    padding-bottom: 5px;
     margin-right: 15px;
   }
 }
@@ -211,10 +272,10 @@ function salvarEdicaoTarefa() {
     width: 75%;
   }
   .posicao-botao-editar {
-    display: flex; 
-    justify-content: end; 
-    padding-top: 4px; 
-    padding-bottom: 5px; 
+    display: flex;
+    justify-content: end;
+    padding-top: 4px;
+    padding-bottom: 5px;
     margin-right: 15px;
   }
 }
@@ -227,10 +288,10 @@ function salvarEdicaoTarefa() {
     width: 50%;
   }
   .posicao-botao-editar {
-    display: flex; 
-    justify-content: end; 
-    padding-top: 4px; 
-    padding-bottom: 5px; 
+    display: flex;
+    justify-content: end;
+    padding-top: 4px;
+    padding-bottom: 5px;
   }
 }
 </style>
