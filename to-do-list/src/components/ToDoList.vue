@@ -94,7 +94,13 @@
   >
     <div class="d-flex pt-16">
       <v-row class="justify-center ga-3">
-        <v-card class="tamanho-card" style="background: rgba(0, 0, 0, 0.1)">
+        <v-card
+          class="tamanho-card"
+          style="background: rgba(0, 0, 0, 0.1)"
+          @drop="onDrop($event, 'toDo')"
+          @dragenter.prevent
+          @dragover.prevent
+        >
           <v-card-title>
             To Do
             <v-btn
@@ -110,19 +116,13 @@
             </v-btn>
           </v-card-title>
           <v-card-text>
-            <v-expansion-panels
-              class="ga-2"
-              style="border-radius: none"
-              @drop="onDrop($event, 'toDo')"
-              @dragenter.prevent
-              @dragover.prevent
-            >
+            <v-expansion-panels class="ga-2" style="border-radius: none">
               <v-expansion-panel
                 v-for="(tarefas, index) in toDos"
                 :key="tarefas"
                 style="background: rgba(0, 0, 0, 0.1)"
                 draggable="true"
-                @dragstart="startDrag($event, tarefas, index)"
+                @dragstart="startDrag($event, index, 'toDo')"
               >
                 <div
                   class="posicao-botao-editar"
@@ -156,16 +156,22 @@
                   ></v-btn>
                 </div>
                 <v-expansion-panel-title style="background-color: white">
-                  {{ tarefas.tarefa.titulo }}
+                  {{ tarefas?.tarefa.titulo }}
                 </v-expansion-panel-title>
                 <v-expansion-panel-text style="background-color: white">
-                  {{ tarefas.tarefa.descricao }}
+                  {{ tarefas?.tarefa.descricao }}
                 </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card-text>
         </v-card>
-        <v-card class="tamanho-card" style="background: rgba(0, 0, 0, 0.1)">
+        <v-card
+          class="tamanho-card"
+          style="background: rgba(0, 0, 0, 0.1)"
+          @drop="onDrop($event, 'working')"
+          @dragenter.prevent
+          @dragover.prevent
+        >
           <v-card-title>
             Working
             <v-btn
@@ -193,7 +199,7 @@
                 :key="tarefas"
                 style="background: rgba(0, 0, 0, 0.1)"
                 draggable="true"
-                @dragstart="startDrag($event, tarefas, index)"
+                @dragstart="startDrag($event, index, 'working')"
               >
                 <div
                   class="posicao-botao-editar"
@@ -228,16 +234,22 @@
                   ></v-btn>
                 </div>
                 <v-expansion-panel-title style="background-color: white">
-                  {{ tarefas.tarefa.titulo }}
+                  {{ tarefas?.tarefa.titulo }}
                 </v-expansion-panel-title>
                 <v-expansion-panel-text style="background-color: white">
-                  {{ tarefas.tarefa.descricao }}
+                  {{ tarefas?.tarefa.descricao }}
                 </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card-text>
         </v-card>
-        <v-card class="tamanho-card" style="background: rgba(0, 0, 0, 0.1)">
+        <v-card
+          class="tamanho-card"
+          style="background: rgba(0, 0, 0, 0.1)"
+          @drop="onDrop($event, 'done')"
+          @dragenter.prevent
+          @dragover.prevent
+        >
           <v-card-title>
             Done
             <v-btn
@@ -265,7 +277,7 @@
                 :key="tarefas"
                 style="background: rgba(0, 0, 0, 0.1)"
                 draggable="true"
-                @dragstart="startDrag($event, tarefas, index)"
+                @dragstart="startDrag($event, index, 'done')"
               >
                 <div
                   class="posicao-botao-editar"
@@ -300,10 +312,10 @@
                   ></v-btn>
                 </div>
                 <v-expansion-panel-title style="background-color: white">
-                  {{ tarefas.tarefa.titulo }}
+                  {{ tarefas?.tarefa.titulo }}
                 </v-expansion-panel-title>
                 <v-expansion-panel-text style="background-color: white">
-                  {{ tarefas.tarefa.descricao }}
+                  {{ tarefas?.tarefa.descricao }}
                 </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
@@ -409,17 +421,41 @@ function deletarTarefa(coluna: string) {
   }
 }
 
-const startDrag = (event: any, tarefa: any, index: any) => {
-  console.log("tarefa", tarefa);
+const startDrag = (event: any, index: any, colunaInicial: string) => {
   event.dataTransfer.dropEffect = "move";
   event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData("indexTarefa", index);
+  event.dataTransfer.setData("colunaInicial", colunaInicial);
 };
 
 const onDrop = (event: any, colunaTarefa: string) => {
-  const indexTarefa = event.dataTransfer.getData("indexTarefa");
-  const tarefa = toDos.value.find((tarefa: any) => tarefa.index == indexTarefa);
-  tarefa.colunaTarefa = colunaTarefa;
+  const index = event.dataTransfer.getData("indexTarefa");
+  const colunaInicial = event.dataTransfer.getData("colunaInicial");
+  if (colunaTarefa === 'working') {
+    if (colunaInicial === 'toDo') {
+      ref(working.value.push(toDos.value[index]));
+      ref(toDos.value.splice(index, 1));
+    } else {
+      ref(working.value.push(done.value[index]));
+      ref(done.value.splice(index, 1));
+    }
+  } else if (colunaTarefa === 'done') {
+    if (colunaInicial === 'working') {
+      ref(done.value.push(working.value[index]));
+      ref(working.value.splice(index, 1));
+    } else {
+      ref(done.value.push(toDos.value[index]));
+      ref(toDos.value.splice(index, 1));
+    }
+  } else {
+    if(colunaInicial === 'done') {
+      ref(toDos.value.push(done.value[index]))
+      ref(done.value.splice(index, 1))
+    } else {
+      ref(toDos.value.push(working.value[index]))
+      ref(working.value.splice(index, 1))
+    }
+  }
 };
 </script>
 
