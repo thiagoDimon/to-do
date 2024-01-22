@@ -16,11 +16,19 @@
 </template>
 
 <script lang="ts" setup>
-  import { useRouter } from 'vue-router';
-  import { ref } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import { ref, onMounted } from 'vue';
+
+  onMounted(() => {
+    if (route.name === 'Home') {
+      return ref(isToggled.value = 0)
+    }
+    return ref(isToggled.value = 1)
+  });
 
   const isToggled = ref(0);
   
+  const route = useRoute();
   const router = useRouter();
 
   const naviagateToHome = () => {
