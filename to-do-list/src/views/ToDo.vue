@@ -188,10 +188,7 @@
             </v-btn>
           </v-card-title>
           <v-card-text>
-            <v-expansion-panels
-              class="ga-2"
-              style="border-radius: none"
-            >
+            <v-expansion-panels class="ga-2" style="border-radius: none">
               <v-expansion-panel
                 v-for="(tarefas, index) in working"
                 :key="tarefas"
@@ -264,10 +261,7 @@
             </v-btn>
           </v-card-title>
           <v-card-text>
-            <v-expansion-panels
-              class="ga-2"
-              style="border-radius: none"
-            >
+            <v-expansion-panels class="ga-2" style="border-radius: none">
               <v-expansion-panel
                 v-for="(tarefas, index) in done"
                 :key="tarefas"
@@ -328,13 +322,18 @@ import { ref, onMounted, watch } from "vue";
 
 onMounted(() => {
   if (localStorage.toDos) {
-    ref(toDos.value = JSON.parse(localStorage.toDos))
+    ref((toDos.value = JSON.parse(localStorage.toDos)));
   }
-
+  if (localStorage.working) {
+    ref((working.value = JSON.parse(localStorage.working)));
+  }
+  if (localStorage.done) {
+    ref((done.value = JSON.parse(localStorage.done)));
+  }
   if (!localStorage.id) {
-    localStorage.setItem('id', JSON.stringify(1));
+    localStorage.setItem("id", JSON.stringify(1));
   }
-})
+});
 
 interface Tarefa {
   id: number;
@@ -349,11 +348,11 @@ interface ToDo {
 const toDos: any = ref([]);
 const working: any = ref([]);
 const done: any = ref([]);
-const id = ref(0)
+const id = ref(0);
 
 watch(id, (newValue) => {
-  localStorage.setItem('id', JSON.stringify(newValue));
-})
+  localStorage.setItem("id", JSON.stringify(newValue));
+});
 
 const tituloTarefa = ref("");
 const descricaoTarefa = ref("");
@@ -368,7 +367,7 @@ const dialogEditarTarefa = ref(false);
 const dialogDeletarTarefa = ref(false);
 
 function adicionarTarefa(coluna: string) {
-  ref(id.value = id.value + 1,)
+  ref((id.value = id.value + 1));
   const novaTarefa: ToDo = {
     tarefa: {
       id: id.value,
@@ -380,13 +379,13 @@ function adicionarTarefa(coluna: string) {
 
   if (coluna === "toDo") {
     ref(toDos.value.push(novaTarefa));
-    localStorage.setItem('toDos', JSON.stringify(toDos.value));
+    localStorage.setItem("toDos", JSON.stringify(toDos.value));
   } else if (coluna === "working") {
     ref(working.value.push(novaTarefa));
-    localStorage.setItem('working', JSON.stringify(working.value));
+    localStorage.setItem("working", JSON.stringify(working.value));
   } else {
     ref(done.value.push(novaTarefa));
-    localStorage.setItem('done', JSON.stringify(done.value));
+    localStorage.setItem("done", JSON.stringify(done.value));
   }
 
   ref((tituloTarefa.value = ""));
@@ -407,10 +406,13 @@ function salvarEdicaoTarefa(coluna: string) {
 
   if (coluna === "toDo") {
     ref((toDos.value[indexTarefa.value] = tarefaEditada));
+    localStorage.setItem("toDos", JSON.stringify(toDos.value));
   } else if (coluna === "working") {
     ref((working.value[indexTarefa.value] = tarefaEditada));
+    localStorage.setItem("working", JSON.stringify(working.value));
   } else {
     ref((done.value[indexTarefa.value] = tarefaEditada));
+    localStorage.setItem("done", JSON.stringify(done.value));
   }
 
   return ref((dialogEditarTarefa.value = false));
@@ -420,22 +422,28 @@ function deletarTarefa(coluna: string) {
   if (coluna === "toDo") {
     if (toDos.value.length > 1) {
       ref(toDos.value.splice(indexTarefa.value, 1));
+      localStorage.setItem("toDos", JSON.stringify(toDos.value));
     } else {
       ref((toDos.value = []));
+      localStorage.setItem("toDos", JSON.stringify(toDos.value));
     }
     return ref((dialogDeletarTarefa.value = false));
   } else if (coluna === "working") {
     if (working.value.length > 1) {
       ref(working.value.splice(indexTarefa.value, 1));
+      localStorage.setItem("working", JSON.stringify(working.value));
     } else {
       ref((working.value = []));
+      localStorage.setItem("working", JSON.stringify(working.value));
     }
     return ref((dialogDeletarTarefa.value = false));
   } else {
     if (done.value.length > 1) {
       ref(done.value.splice(indexTarefa.value, 1));
+      localStorage.setItem("done", JSON.stringify(done.value));
     } else {
       ref((done.value = []));
+      localStorage.setItem("done", JSON.stringify(done.value));
     }
     return ref((dialogDeletarTarefa.value = false));
   }
@@ -451,29 +459,35 @@ const startDrag = (event: any, index: any, colunaInicial: string) => {
 const onDrop = (event: any, colunaTarefa: string) => {
   const index = event.dataTransfer.getData("indexTarefa");
   const colunaInicial = event.dataTransfer.getData("colunaInicial");
-  if (colunaTarefa === 'working') {
-    if (colunaInicial === 'toDo') {
+  if (colunaTarefa === "working") {
+    if (colunaInicial === "toDo") {
       ref(working.value.push(toDos.value[index]));
       ref(toDos.value.splice(index, 1));
+    } else if (colunaInicial === "working" && colunaTarefa === "working") {
+      return;
     } else {
       ref(working.value.push(done.value[index]));
       ref(done.value.splice(index, 1));
     }
-  } else if (colunaTarefa === 'done') {
-    if (colunaInicial === 'working') {
+  } else if (colunaTarefa === "done") {
+    if (colunaInicial === "working") {
       ref(done.value.push(working.value[index]));
       ref(working.value.splice(index, 1));
+    } else if (colunaInicial === "done" && colunaTarefa === "done") {
+      return;
     } else {
       ref(done.value.push(toDos.value[index]));
       ref(toDos.value.splice(index, 1));
     }
   } else {
-    if(colunaInicial === 'done') {
-      ref(toDos.value.push(done.value[index]))
-      ref(done.value.splice(index, 1))
+    if (colunaInicial === "done") {
+      ref(toDos.value.push(done.value[index]));
+      ref(done.value.splice(index, 1));
+    } else if (colunaInicial === "toDo" && colunaTarefa === "toDo") {
+      return;
     } else {
-      ref(toDos.value.push(working.value[index]))
-      ref(working.value.splice(index, 1))
+      ref(toDos.value.push(working.value[index]));
+      ref(working.value.splice(index, 1));
     }
   }
 };
@@ -489,10 +503,9 @@ const onDrop = (event: any, colunaTarefa: string) => {
   }
   .posicao-botao-editar {
     display: flex;
-    justify-content: start;
+    justify-content: end;
     padding-top: 4px;
     padding-bottom: 5px;
-    margin-right: 15px;
   }
 }
 
@@ -508,7 +521,6 @@ const onDrop = (event: any, colunaTarefa: string) => {
     justify-content: end;
     padding-top: 4px;
     padding-bottom: 5px;
-    margin-right: 15px;
   }
 }
 
