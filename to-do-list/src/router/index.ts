@@ -4,17 +4,17 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    component: () => import('@/layouts/default/Default.vue'),
+    component: () => import('../layouts/default/Default.vue'),
     children: [
       {
         path: '',
         name: 'Home',
-        component: () => import('@/views/Home.vue'),
+        component: () => import('../views/Home.vue'),
       },
       {
         path: 'toDo',
         name: 'ToDo',
-        component: () => import('@/views/ToDo.vue'),
+        component: () => import('../views/ToDo.vue'),
       }
     ],
   },
