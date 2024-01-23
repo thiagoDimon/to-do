@@ -12,7 +12,7 @@ const routes = [
         component: () => import('@/views/Home.vue'),
       },
       {
-        path: '/toDo',
+        path: 'toDo',
         name: 'ToDo',
         component: () => import('@/views/ToDo.vue'),
       }
