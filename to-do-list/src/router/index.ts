@@ -1,20 +1,23 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import Default from '@/layouts/default/Default.vue'
+import Home from '@/views/Home.vue'
+import ToDo from '@/views/ToDo.vue'
 
 const routes = [
   {
     path: '/',
-    component: () => import('../layouts/default/Default.vue'),
+    component: Default,
     children: [
       {
         path: '',
         name: 'Home',
-        component: () => import('../views/Home.vue'),
+        component: Home,
       },
       {
         path: 'toDo',
         name: 'ToDo',
-        component: () => import('../views/ToDo.vue'),
+        component: ToDo,
       }
     ],
   },
